@@ -104,11 +104,13 @@ With `AppContext.BaseDirectory` resolving to a root-owned directory (e.g. `/opt/
 | 2026-06-15 | CVE request submitted to MITRE |
 | 2026-06-18 | Final fix merged upstream (`d7a9544`); CVE re-requested via GHSA |
 | 2026-06-19 | Second CVE request rejected by GitHub |
+| 2026-06-22 | GHSA advisory published without a CVE |
 
 ## Current status
 
 - Downstream affected deployment: **patched** (sudo entry removed, 28 May 2026)
 - Upstream final fix: **merged upstream 2026-06-18** ([`d7a9544`](https://github.com/rasta-mouse/pwnlift/commit/d7a95449d9ee1ea09ec1529286685f6187afbbed))
+- GHSA advisory: **published** 2026-06-22 (no CVE assigned)
 - CVE: **requested via GHSA, rejected by GitHub twice** (9 and 19 June); MITRE request pending since 15 June
 
 ## Testing disclosure
