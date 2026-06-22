@@ -126,4 +126,4 @@ Discovered by Greg Durys ([GregDurys](https://github.com/GregDurys)).
 - Initial fix: [`e3eddac`](https://github.com/rasta-mouse/pwnlift/commit/e3eddaca42b4b3e9c69f2d7aa024b6c82e27a5a2)
 - [CWE-59: Improper Link Resolution Before File Access](https://cwe.mitre.org/data/definitions/59.html)
 - [CWE-367: Time-of-check Time-of-use Race Condition](https://cwe.mitre.org/data/definitions/367.html)
-- Blog post: [Beyond CRTO: pwnlift](https://payloadforge.io/beyond-crto-pwnlift/) (link to be updated on publication)
+- Blog post: [Beyond CRTO: pwnlift](https://payloadforge.io/beyond-crto-pwnlift/)
