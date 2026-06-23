@@ -3,7 +3,7 @@
 ## Identifiers
 
 - GHSA: [GHSA-2v7v-rhpw-m9w4](https://github.com/rasta-mouse/pwnlift/security/advisories/GHSA-2v7v-rhpw-m9w4)
-- CVE: requested via GHSA, rejected by GitHub 9 and 19 June; MITRE request pending since 15 June
+- CVE: [CVE-2026-56815](https://www.cve.org/CVERecord?id=CVE-2026-56815)
 
 ## Affected project
 
@@ -105,13 +105,15 @@ With `AppContext.BaseDirectory` resolving to a root-owned directory (e.g. `/opt/
 | 2026-06-18 | Final fix merged upstream (`d7a9544`); CVE re-requested via GHSA |
 | 2026-06-19 | Second CVE request rejected by GitHub |
 | 2026-06-22 | GHSA advisory published without a CVE |
+| 2026-06-23 | Advisory posted to oss-security |
+| 2026-06-23 | MITRE assigned CVE-2026-56815 |
 
 ## Current status
 
 - Downstream affected deployment: **patched** (sudo entry removed, 28 May 2026)
 - Upstream final fix: **merged upstream 2026-06-18** ([`d7a9544`](https://github.com/rasta-mouse/pwnlift/commit/d7a95449d9ee1ea09ec1529286685f6187afbbed))
 - GHSA advisory: **published** 2026-06-22 (no CVE assigned)
-- CVE: **requested via GHSA, rejected by GitHub twice** (9 and 19 June); MITRE request pending since 15 June
+- CVE: [**CVE-2026-56815**](https://www.cve.org/CVERecord?id=CVE-2026-56815), assigned by MITRE 2026-06-23
 
 ## Testing disclosure
 
@@ -128,4 +130,6 @@ Discovered by Greg Durys ([GregDurys](https://github.com/GregDurys)).
 - Initial fix: [`e3eddac`](https://github.com/rasta-mouse/pwnlift/commit/e3eddaca42b4b3e9c69f2d7aa024b6c82e27a5a2)
 - [CWE-59: Improper Link Resolution Before File Access](https://cwe.mitre.org/data/definitions/59.html)
 - [CWE-367: Time-of-check Time-of-use Race Condition](https://cwe.mitre.org/data/definitions/367.html)
+- CVE record: [CVE-2026-56815](https://www.cve.org/CVERecord?id=CVE-2026-56815)
+- oss-security: [oss-security advisory](https://www.openwall.com/lists/oss-security/2026/06/23/2)
 - Blog post: [Beyond CRTO: pwnlift](https://payloadforge.io/beyond-crto-pwnlift/)
