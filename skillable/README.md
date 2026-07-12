@@ -1,4 +1,4 @@
-# Skillable SCORM launch: userId parameter not validated against session token allows allocation bypass and cross-user DoS
+# Skillable SCORM launch: userId parameter not validated against launch token allows allocation bypass and cross-user DoS
 
 ## Identifiers
 
@@ -8,7 +8,7 @@
 
 - Vendor: [Skillable](https://www.skillable.com) (formerly Learn on Demand Systems)
 - Product: Skillable hosted lab platform, SCORM launch integration (cloud service, no on-premises deployment)
-- Language/runtime: ASP.NET Core (Microsoft-IIS/10.0), client-side SCORM JavaScript launch flow
+- Language/runtime: client-side SCORM JavaScript launch flow
 
 ## Affected component
 
@@ -32,7 +32,7 @@ The score covers the confirmed denial of service across enrolled users. Skillabl
 
 ## Summary
 
-The Skillable SCORM lab launch endpoint validates the SCORM session token as an enrolment check, then evaluates the per-user launch limit against a `userId` query parameter the browser supplies. The token and the `userId` are never cross-validated. An authenticated student can modify the `userId` on the launch request to bypass the per-user launch limit, provision additional concurrent lab instances, and consume the lab allocation of other enrolled users. The parameter accepts arbitrary strings with no format validation, including values that are not valid hexadecimal and structures that are entirely fabricated.
+The Skillable SCORM lab launch endpoint validates the SCORM launch token sufficiently to authorise the launch, then evaluates the per-user launch limit against a `userId` query parameter the browser supplies. The token and the `userId` are never cross-validated. An authenticated student can modify the `userId` on the launch request to bypass the per-user launch limit, provision additional concurrent lab instances, and consume the lab allocation of other enrolled users. The parameter accepts arbitrary strings with no format validation, including values that are not valid hexadecimal and structures that are entirely fabricated.
 
 ## Impact
 
@@ -40,7 +40,7 @@ Any enrolled student can launch lab instances beyond the configured per-user lim
 
 ## Deployment context
 
-The behaviour was observed on the Zero Point Security platform (now operated by Fortra), which uses Skillable's SCORM integration to provision the Red Team Ops course labs and exam. The same launch pattern applies to any Skillable customer whose SCORM integration passes a client-supplied `userId` to the launch endpoint. Skillable serves enterprise training providers including Microsoft, IBM, CompTIA, and Pearson VUE.
+The behaviour was observed on the Zero Point Security platform (now operated by Fortra), which uses Skillable's SCORM integration to provision the Red Team Ops course labs and exam. The same launch pattern applies to any Skillable customer whose SCORM integration passes a client-supplied `userId` to the launch endpoint. Skillable publicly lists relationships with organisations including Microsoft, IBM, CompTIA, and Pearson.
 
 ## Technical details
 
@@ -49,12 +49,12 @@ The SCORM lab launch flow operates in five steps:
 1. The student opens a lab unit in the LearnWorlds course player.
 2. LearnWorlds loads the SCORM token and constructs the launch URL, dropping the student's `userId` in as a query parameter.
 3. The browser requests the launch URL from `scorm.skillable.com`.
-4. Skillable validates the SCORM token as an enrolment check, then evaluates the per-user launch limit against the supplied `userId`.
+4. Skillable validates the SCORM token sufficiently to authorise the launch, then evaluates the per-user launch limit against the supplied `userId`.
 5. If the limit has not been exceeded, a lab instance is provisioned and a one-time access URL is returned.
 
-The vulnerability is in step 4. The token answers one question (is this session enrolled) and the `userId` answers another (whose allocation does this launch count against), but only the token is a value the server can trust, and the two are never checked against each other. Every layer of the launch flow runs client-side, so by the time the request reaches `scorm.skillable.com` the token, the `userId`, and the rest of the query string have all passed through JavaScript the student controls.
+The vulnerability is in step 4. The token answers one question (is this session enrolled) and the `userId` answers another (whose allocation does this launch count against), The token is server-validated, while the `userId` is client-controlled, and no binding between the two is enforced. Every layer of the launch flow runs client-side, so by the time the request reaches `scorm.skillable.com` the token, the `userId`, and the rest of the query string have all passed through JavaScript the student controls.
 
-The `userId` parameter accepts arbitrary strings with no format validation. Both `683175c1ac36b0299c24b31g` (valid length, non-hexadecimal final character) and `000000000000000000000001` (a fabricated structure) were accepted and provisioned lab instances. The same SCORM token launches labs under different `userId` values, confirming the token is not bound to a specific user identity. Each launch under a distinct `userId` creates a separate `LabInstanceId` and provisions real cloud virtual machines.
+The `userId` parameter accepts arbitrary strings with no format validation. Both `683175c1ac36b0299c24b31g` (expected length, non-hexadecimal final character) and `000000000000000000000001` (a fabricated structure) were accepted and provisioned lab instances. The same SCORM token launches labs under different `userId` values, confirming the token is not bound to a specific user identity. Each launch under a distinct `userId` creates a separate `LabInstanceId` and provisions real cloud virtual machines.
 
 Launching the target lab a second time under the original `userId` returns the per-user limit error:
 
@@ -98,14 +98,9 @@ The `/scorm/details/{LabInstanceId}?token=` endpoint is accessible for any insta
 
 ## Remediation
 
-Skillable has stated no fix is planned for the SCORM launch path. The following would remove the primitive:
+Bind the launch to a server-validated learner identity, for example through a user-scoped signed token or server-to-server integration. Do not enforce per-user limits using an unverified browser-supplied `userId`. Where such binding cannot be added to the SCORM launch path, migrate to the API or LTI 1.3 integration.
 
-1. Derive the `userId` used for allocation from the authenticated SCORM token's claims rather than the client-supplied query parameter, and reject requests where the supplied `userId` does not match the authenticated identity.
-2. Enforce launch limits per SCORM token or authenticated session rather than per `userId` string.
-3. Apply rate limiting to the SCORM launch endpoint.
-4. Log and alert on `userId` mismatches between the SCORM token and the query parameter.
-
-The vendor-recommended path for customers is migration away from the SCORM launch integration to an API or LTI 1.3 integration, which carries a verified identity the server can check rather than a `userId` the browser supplies.
+The vendor states that no fix is planned for the SCORM launch path. The vendor-recommended path for customers is migration to an API or LTI 1.3 launch integration, which carries the identity binding the SCORM launch path lacks.
 
 ## Disclosure timeline
 
@@ -124,14 +119,14 @@ The vendor-recommended path for customers is migration away from the SCORM launc
 | 2026-06-08 | Second follow-up, restating the 60-day window closing on 2026-07-12 |
 | 2026-06-10 | Skillable responded that the behaviour is an inherent flaw in the SCORM technology; requested no disclosure without written permission |
 | 2026-06-10 | Pushback sent; open-ended embargo declined; 2026-07-12 date held |
-| 2026-06-23 | MITRE reserved CVE-2026-56877; technical details embargoed until 2026-07-12 |
+| 2026-06-23 | MITRE reserved CVE-2026-56877; coordinated disclosure remained under embargo until 2026-07-12 |
 | 2026-06-26 | Skillable customer advisory sent (Paul Adkins, VP, Security Operations); coordination update sent to Skillable |
 | 2026-07-12 | Advisory published |
 
 ## Current status
 
 - Affected endpoint: unfixed. Skillable classifies the behaviour as an inherent SCORM limitation and plans no fix on the SCORM launch path.
-- Vendor customer action: private migration advisory issued to affected customers on 2026-06-26 recommending migration to an API or LTI 1.3 integration.
+- Vendor customer action: customer communication sent to at least one affected customer on 2026-06-26 recommending migration to an API or LTI 1.3 integration.
 - [CVE-2026-56877](https://www.cve.org/CVERecord?id=CVE-2026-56877), reserved by MITRE as CNA of last resort on 2026-06-23.
 
 ## Testing disclosure
