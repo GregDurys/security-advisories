@@ -36,7 +36,7 @@ The Skillable SCORM lab launch endpoint validates the SCORM launch token suffici
 
 ## Impact
 
-Any enrolled student can launch lab instances beyond the configured per-user limit and can deny another student access by consuming that student's allocation. Each launch under a distinct `userId` provisions real cloud virtual machines (typically a domain controller plus one to three additional machines, active for 30 to 60 minutes) at the course provider's expense. Where the same SCORM launch mechanism serves a certification exam, consuming a victim's single-use exam attempt would deny them the ability to sit the exam and trigger the associated cooldown. Combined with a user enumeration vector on the learning management system, an attacker could obtain the `userId` values of the enrolled population and scale allocation exhaustion across the full student body.
+Any enrolled student can launch lab instances beyond the configured per-user limit and can deny another student access by consuming that student's allocation. Each launch under a distinct `userId` provisions real cloud virtual machines (typically a domain controller plus one to three additional machines, active for 30 to 60 minutes) at the course provider's expense. Skillable subsequently confirmed that the same weakness could affect another learner's certification exam allocation. The reporter did not independently test the exam endpoint. Combined with a user enumeration vector on the learning management system, an attacker could obtain the `userId` values of the enrolled population and scale allocation exhaustion across the full student body.
 
 ## Deployment context
 
@@ -52,7 +52,7 @@ The SCORM lab launch flow operates in five steps:
 4. Skillable validates the SCORM token sufficiently to authorise the launch, then evaluates the per-user launch limit against the supplied `userId`.
 5. If the limit has not been exceeded, a lab instance is provisioned and a one-time access URL is returned.
 
-The vulnerability is in step 4. The token answers one question (is this session enrolled) and the `userId` answers another (whose allocation does this launch count against), The token is server-validated, while the `userId` is client-controlled, and no binding between the two is enforced. Every layer of the launch flow runs client-side, so by the time the request reaches `scorm.skillable.com` the token, the `userId`, and the rest of the query string have all passed through JavaScript the student controls.
+The vulnerability is in step 4. The token answers one question (is this session enrolled) and the `userId` answers another (whose allocation this launch counts against). The token is server-validated, while the `userId` is client-controlled, and no binding between the two is enforced. Every layer of the launch flow runs client-side, so by the time the request reaches `scorm.skillable.com` the token, the `userId`, and the rest of the query string have all passed through JavaScript the student controls.
 
 The `userId` parameter accepts arbitrary strings with no format validation. Both `683175c1ac36b0299c24b31g` (expected length, non-hexadecimal final character) and `000000000000000000000001` (a fabricated structure) were accepted and provisioned lab instances. The same SCORM token launches labs under different `userId` values, confirming the token is not bound to a specific user identity. Each launch under a distinct `userId` creates a separate `LabInstanceId` and provisions real cloud virtual machines.
 
