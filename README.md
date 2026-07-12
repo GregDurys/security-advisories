@@ -11,7 +11,7 @@ Public security advisories by [Greg Durys](https://github.com/GregDurys).
 ## Disclaimer
 
 These vulnerabilities were discovered during authorised security
-assessments or in local testbed environments. The information provided
+assessments, local testbed environments, or normal product usage. The information provided
 is for defensive and educational purposes.
 Always obtain proper authorisation before security testing.
 
